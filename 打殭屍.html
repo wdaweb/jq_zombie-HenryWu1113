@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>打殭屍</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+        integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://unpkg.com/nes.css@latest/css/nes.min.css" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Londrina+Solid:wght@100;300;400;900&family=Noto+Sans+SC:wght@100;300;400;500;700;900&family=Orbitron:wght@400;500;600;700;800;900&family=Press+Start+2P&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            width: 100%;
+            height: 100%;
+            background-image: url('./horror_bg.jpg');
+            position: relative;
+            overflow: auto;
+        }
+
+        /* body::after {
+            content: '';
+            width: 100%;
+            height: 100%;
+            background-image: url('./horror_bg.jpg');
+            position: absolute;
+            left: 0;
+            top: 0;
+            filter: blur(2px);
+            z-index: 1;
+        } */
+
+        #main {
+            width: 700px;
+            /* background: lightgreen; */
+            margin: auto;
+        }
+
+        #top {
+            width: 700px;
+            height: 100px;
+            line-height: 100px;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 3rem;
+            text-align: center;
+            color: red;
+            text-shadow: 0 0 10px orange;
+            filter: drop-shadow(0 0 10px black);
+
+        }
+
+        .button {
+            text-align: center;
+        }
+
+        #top .t1 {
+            position: absolute;
+            left: 110px;
+            top: 14px;
+            width: 80px;
+        }
+
+        #top .t2 {
+            position: absolute;
+            right: 100px;
+            top: 16px;
+            width: 80px;
+        }
+
+        .info {
+            width: 200px;
+            height: 64px;
+            float: left;
+            color: red;
+            line-height: 32px;
+            text-shadow: 0 0 10px orange;
+            filter: drop-shadow(0 0 10px black);
+        }
+
+        .star {
+            float: right;
+        }
+
+        #content {
+            position: relative;
+            width: 700px;
+            height: 700px;
+        }
+
+        #content .wood {
+            width: 727px;
+            position: absolute;
+            left: 0;
+            top: 197px;
+            user-select: none;
+            -webkit-user-drag: none;
+            pointer-events: none;
+        }
+
+        #game {
+            width: 700px;
+            height: 700px;
+            background: rgba(255, 255, 255, 0.2);
+            /* background: radial-gradient(white 50%, black); */
+            /* background: url('./elle-lansen-graveyard-background.jpg') no-repeat center center/1300px; */
+            /* opacity: 0.7; */
+            overflow: hidden;
+            position: relative;
+            cursor: url('./小刀100.png') 50 25, auto;
+            box-shadow: 0 0 10px black;
+        }
+
+        #game img {
+            height: 150px;
+            position: absolute;
+            /* 無法被選取 */
+            user-select: none;
+            /* 無法拖曳 */
+            -webkit-user-drag: none;
+        }
+
+        .blood {
+            /* 忽略點擊事件 */
+            pointer-events: none;
+        }
+
+        i {
+            width: 500px;
+        }
+    </style>
+    <!-- 不知道為什麼要加這個 -->
+    <link rel="shortcut icon" href="#">
+</head>
+
+<body>
+    <!-- <input type="button" value="Start" id="btn-start">
+    <input type="button" value="Stop" id="btn-stop" disabled="true"> -->
+    <audio id="sound" src="./Come-Play-with-Me.mp3" autoplay loop></audio>
+    <div id="main">
+        <div id="top">
+            <h1>KILL Zombie</h1>
+            <img src="./pngwing.png" class="t1">
+            <img src="./pngwing2.png" class="t2">
+        </div>
+        <div id="btn">
+            <div class="button">
+                <button id="btn-start" class="nes-btn is-success">START</button>
+                <button id="btn-stop" class="nes-btn is-disabled">STOP</button>
+            </div>
+        </div>
+        <div id="sc">
+            <div class="info">
+                <div>Score:<span id="text-score">0</span></div>
+                <div>Time:<span id="text-time">0</span>s</div>
+            </div>
+
+            <div id="star"></div>
+        </div>
+        <div id="content">
+            <div id="game"></div>
+            <img class="wood" src="./枯木.png" alt="">
+        </div>
+    </div>
+
+
+
+
+
+    <script>
+        let score = 0
+        let countdown = 60
+        let timer = 0
+        let countdown2 = 30
+
+        Swal.fire(`<img src='./1.gif' style="width:100"> 1 point<br>
+        <img src='./running.gif' style="width:100"> 2 points<br>`)
+
+
+        const sound = document.getElementById('sound')
+        sound.volume = 0.5
+        console.log(sound);
+
+        // Crome 自動撥放解決方法
+        window.onload = function () {
+            setInterval("toggleSound()", 100)
+        }
+
+        function toggleSound() {
+            if (sound.paused) {
+                sound.paused = false
+                sound.play()
+            }
+        }
+
+
+
+        function move(zombie) {
+            const top = Math.round(Math.random() * 70) + '%'
+            const left = Math.round(Math.random() * 70) + '%'
+            zombie.stop().animate({ top, left }, 3500, function () {
+                move(zombie)
+            })
+        }
+
+        function move2(zombie) {
+            const top = Math.round(Math.random() * 70) + '%'
+            const left = Math.round(Math.random() * 70) + '%'
+            zombie.stop().animate({ top, left }, 1200, function () {
+                move2(zombie)
+            })
+        }
+
+        $('#btn-start').click(function () {
+            // 停用按鈕
+            $(this).removeClass('is-success').addClass('is-disabled')
+            // 啟用按鈕
+            $('#btn-stop').removeClass('is-disabled').addClass('is-error')
+            // 重設
+            score = 0
+            $('#text-score').text(score)
+            countdown = 60
+            $('#text-time').text(countdown2)
+            // 重製小刀
+            $('#game').css('cursor', 'url("./小刀100.png") 50 25, auto')
+            // 重置星星
+            $('#star i').remove()
+            // 改背景音樂
+            $('#sound').attr('src', './Loyalty.mp3')
+
+            const audio = new Audio('./click.wav')
+            audio.play()
+            audio.volume = 0.6
+
+            // 開始遊戲
+            timer = setInterval(function () {
+                // 倒數
+
+                countdown--
+                $('#text-time').text(Math.ceil(countdown / 2))
+
+                const random = Math.round(Math.random() * 9)
+                if (random > 3 && $('#game .zombie').length < 6) {
+                    const top = Math.round(Math.random() * 70) + '%'
+                    const left = Math.round(Math.random() * 70) + '%'
+                    const zombie = $(`<img src="./1.gif" class="zombie" style="top: ${top}; left:${left}">`)
+                    // const running = $(`<img src="./running.gif" class="zombie" style="top: ${top}; left:${left}">`)
+                    $('#game').append(zombie)
+                    // $('#game').append(running)
+                    move(zombie)
+                    // move(running)
+                }
+
+                const random2 = Math.round(Math.random() * 9)
+                if (random2 > 5 && $('#game .running').length < 3) {
+                    const top = Math.round(Math.random() * 70) + '%'
+                    const left = Math.round(Math.random() * 70) + '%'
+                    // const zombie = $(`<img src="./1.gif" class="zombie" style="top: ${top}; left:${left}">`)
+                    const running = $(`<img src="./running.gif" class="running" style="top: ${top}; left:${left}">`)
+                    // $('#game').append(zombie)
+                    $('#game').append(running)
+                    // move(zombie)
+                    move2(running)
+                }
+
+                if (countdown <= 0) {
+                    clearInterval(timer)
+                    $('#game img').remove()
+                    $('#btn-start').removeClass('is-disabled').addClass('is-success')
+                    $('#btn-stop').removeClass('is-error').addClass('is-disabled')
+                    $('#sound').attr('src', './Come-Play-with-Me.mp3')
+                    if (score >= 70) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'NO.1 Killer!!!',
+                            text: `You got ${score} point(s)`,
+                            backdrop: `
+                                rgba(0,0,123,0.4)
+                                url("./nyan.gif")
+                                left top
+                                repeat-Y`
+                        })
+                    } else if (score >= 60) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Top Predator',
+                            text: `You got ${score} point(s)`,
+                            backdrop: `
+                                rgba(0,0,123,0.4)
+                                url("./1.gif")
+                                left top
+                                no-repeat`
+                        })
+                    } else if (score >= 50) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Legendary',
+                            text: `You got ${score} point(s)`,
+                            backdrop: `
+                                rgba(0,0,123,0.4)
+                                url("./1.gif")
+                                left top
+                                no-repeat`
+                        })
+                    } else if (score >= 40) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Insane',
+                            text: `You got ${score} point(s)`,
+                            backdrop: `
+                                rgba(0,0,123,0.4)
+                                url("./1.gif")
+                                left top
+                                no-repeat`
+                        })
+                    } else if (score >= 30) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Crazy',
+                            text: `You got ${score} point(s)`,
+                            backdrop: `
+                                rgba(0,0,123,0.4)
+                                url("./1.gif")
+                                left top
+                                no-repeat`
+                        })
+                    } else if (score >= 20) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Good',
+                            text: `You got ${score} point(s)`,
+                            backdrop: `
+                                rgba(0,0,123,0.4)
+                                url("./1.gif")
+                                left top
+                                no-repeat`
+                        })
+                    } else if (score >= 10) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Not Bad',
+                            text: `You got ${score} point(s)`,
+                            backdrop: `
+                                rgba(0,0,123,0.4)
+                                url("./1.gif")
+                                left top
+                                no-repeat`
+                        })
+                    } else {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Noob',
+                            text: `You got ${score} point(s)`,
+                            backdrop: `
+                                rgba(0,0,123,0.4)
+                                url("./1.gif")
+                                left top
+                                no-repeat`
+                        })
+                    }
+
+
+                }
+            }, 500)
+
+        })
+
+        $('#btn-stop').click(function () {
+            clearInterval(timer)
+            $('#game img').remove()
+            $('#btn-start').removeClass('is-disabled').addClass('is-success')
+            $('#btn-stop').removeClass('is-error').addClass('is-disabled')
+            $('#sound').attr('src', './Come-Play-with-Me.mp3')
+            Swal.fire({
+                icon: 'warning',
+                title: 'Failed'
+            })
+        })
+
+        $('#game').on('click', '.zombie', function () {
+            // 換成有血的刀
+            $('#game').css('cursor', 'url("./血小刀100.png") 50 24, auto')
+
+            const audio = new Audio('./zombie-whimper.mp3')
+            audio.play()
+            audio.volume = 0.3
+            // console.log(audio);
+
+            $(this).attr('src', './blood.png')
+            $(this).toggleClass('zombie', 'blood')
+            $(this).stop()
+            score++
+            $('#text-score').text(score)
+            if (score == 10) {
+                $('#star').append('<i class="nes-icon is-large star"></i>')
+            } else if (score == 20) {
+                $('#star').append('<i class="nes-icon is-large star"></i>')
+            } else if (score == 30) {
+                $('#star').append('<i class="nes-icon is-large star"></i>')
+            } else if (score == 40) {
+                $('#star').append('<i class="nes-icon is-large star"></i>')
+            } else if (score == 50) {
+                $('#star').append('<i class="nes-icon is-large star"></i>')
+            } else if (score == 60) {
+                $('#star').append('<i class="nes-icon is-large star"></i>')
+            } else if (score == 70) {
+                $('#star').append('<i class="nes-icon is-large star"></i>')
+            }
+            // console.log(score)
+        })
+
+        $('#game').on('click', '.running', function () {
+            // 換成有血的刀
+            $('#game').css('cursor', 'url("./血小刀100.png") 50 24, auto')
+
+            const audio = new Audio('./monster-scream.wav')
+            audio.play()
+            audio.volume = 0.1
+
+            $(this).attr('src', './blood.png')
+            $(this).toggleClass('running', 'blood')
+            $(this).stop()
+            score += 2
+            $('#text-score').text(score)
+            if (score == 10 || score == 11) {
+                $('#star').append('<i class="nes-icon is-large star"></i>')
+            } else if (score == 20 || score == 21) {
+                $('#star').append('<i class="nes-icon is-large star"></i>')
+            } else if (score == 30 || score == 31) {
+                $('#star').append('<i class="nes-icon is-large star"></i>')
+            } else if (score == 40 || score == 41) {
+                $('#star').append('<i class="nes-icon is-large star"></i>')
+            } else if (score == 50 || score == 51) {
+                $('#star').append('<i class="nes-icon is-large star"></i>')
+            } else if (score == 60 || score == 61) {
+                $('#star').append('<i class="nes-icon is-large star"></i>')
+            } else if (score == 70 || score == 71) {
+                $('#star').append('<i class="nes-icon is-large star"></i>')
+            }
+        })
+    </script>
+</body>
+
+</html>
