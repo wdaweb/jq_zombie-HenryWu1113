@@ -41,6 +41,7 @@
             width: 700px;
             /* background: lightgreen; */
             margin: auto;
+
         }
 
         #top {
@@ -77,9 +78,14 @@
             width: 80px;
         }
 
+        #sc {
+            width: 700px;
+            height: 96px;
+        }
+
         .info {
-            width: 200px;
-            height: 64px;
+            /* width: 200px; */
+            height: 96px;
             float: left;
             color: red;
             line-height: 32px;
@@ -87,11 +93,26 @@
             filter: drop-shadow(0 0 10px black);
         }
 
-        .star {
+        #highscoretext {
+            color: yellow;
+            text-shadow: 0 0 10px 50px white;
+            animation: change 5s infinite ease-in-out;
+        }
+
+        @keyframes change {
+            50% {
+                color: white;
+            }
+        }
+
+        #star {
+            width: 700px;
+            height: 64px;
             float: right;
         }
 
         #content {
+            margin-top: 64px;
             position: relative;
             width: 700px;
             height: 700px;
@@ -101,7 +122,7 @@
             width: 727px;
             position: absolute;
             left: 0;
-            top: 197px;
+            top: 134px;
             user-select: none;
             -webkit-user-drag: none;
             pointer-events: none;
@@ -157,15 +178,17 @@
                 <button id="btn-start" class="nes-btn is-success">START</button>
                 <button id="btn-stop" class="nes-btn is-disabled">STOP</button>
             </div>
+
         </div>
         <div id="sc">
             <div class="info">
+                <div>Highest Score:　<span id="highscoretext">0</span> Points
+                </div>
                 <div>Score:<span id="text-score">0</span></div>
                 <div>Time:<span id="text-time">0</span>s</div>
             </div>
-
-            <div id="star"></div>
         </div>
+        <div id="star"></div>
         <div id="content">
             <div id="game"></div>
             <img class="wood" src="./枯木.png" alt="">
@@ -181,6 +204,7 @@
         let countdown = 60
         let timer = 0
         let countdown2 = 30
+        let highscore = { score: 0 }
 
         Swal.fire(`<img src='./1.gif' style="width:100"> 1 point<br>
         <img src='./running.gif' style="width:100"> 2 points<br>`)
@@ -202,7 +226,12 @@
             }
         }
 
-
+        let storage = localStorage.getItem('killZombie')
+        if (storage) {
+            storage = JSON.parse(storage)
+            highscore.score = storage.score
+            $('#highscoretext').text(highscore.score)
+        }
 
         function move(zombie) {
             const top = Math.round(Math.random() * 70) + '%'
@@ -278,11 +307,16 @@
                     $('#btn-start').removeClass('is-disabled').addClass('is-success')
                     $('#btn-stop').removeClass('is-error').addClass('is-disabled')
                     $('#sound').attr('src', './Come-Play-with-Me.mp3')
+                    if (score > highscore.score) {
+                        highscore.score = score
+                        $('#highscoretext').text(highscore.score)
+                        localStorage.setItem('killZombie', JSON.stringify(highscore))
+                    }
                     if (score >= 70) {
                         Swal.fire({
                             icon: 'success',
                             title: 'NO.1 Killer!!!',
-                            text: `You got ${score} point(s)`,
+                            text: `You got ${score} points`,
                             backdrop: `
                                 rgba(0,0,123,0.4)
                                 url("./nyan.gif")
@@ -293,7 +327,7 @@
                         Swal.fire({
                             icon: 'success',
                             title: 'Top Predator',
-                            text: `You got ${score} point(s)`,
+                            text: `You got ${score} points`,
                             backdrop: `
                                 rgba(0,0,123,0.4)
                                 url("./1.gif")
@@ -304,7 +338,7 @@
                         Swal.fire({
                             icon: 'success',
                             title: 'Legendary',
-                            text: `You got ${score} point(s)`,
+                            text: `You got ${score} points`,
                             backdrop: `
                                 rgba(0,0,123,0.4)
                                 url("./1.gif")
@@ -315,7 +349,7 @@
                         Swal.fire({
                             icon: 'success',
                             title: 'Insane',
-                            text: `You got ${score} point(s)`,
+                            text: `You got ${score} points`,
                             backdrop: `
                                 rgba(0,0,123,0.4)
                                 url("./1.gif")
@@ -326,7 +360,7 @@
                         Swal.fire({
                             icon: 'success',
                             title: 'Crazy',
-                            text: `You got ${score} point(s)`,
+                            text: `You got ${score} points`,
                             backdrop: `
                                 rgba(0,0,123,0.4)
                                 url("./1.gif")
@@ -337,7 +371,7 @@
                         Swal.fire({
                             icon: 'success',
                             title: 'Good',
-                            text: `You got ${score} point(s)`,
+                            text: `You got ${score} points`,
                             backdrop: `
                                 rgba(0,0,123,0.4)
                                 url("./1.gif")
@@ -348,7 +382,7 @@
                         Swal.fire({
                             icon: 'success',
                             title: 'Not Bad',
-                            text: `You got ${score} point(s)`,
+                            text: `You got ${score} points`,
                             backdrop: `
                                 rgba(0,0,123,0.4)
                                 url("./1.gif")
@@ -382,7 +416,7 @@
             $('#sound').attr('src', './Come-Play-with-Me.mp3')
             Swal.fire({
                 icon: 'warning',
-                title: 'Failed'
+                title: 'Game Over'
             })
         })
 
